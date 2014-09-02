@@ -38,8 +38,10 @@ class TestParseFrameFunction(unittest.TestCase):
 class TestFrameParser(unittest.TestCase):
     def setUp(self):
         nodes = [
-            NodeDefinition(10, {'a': {'value': 'x[0]'}, 'b': {'value': '3.0'}}),
-            NodeDefinition(20, {'a': {'value': 'x[1]'}, 'b': {'value': '2.1'}}),
+            NodeDefinition('bob', 10,
+                           {'a': {'value': 'x[0]'}, 'b': {'value': '3.0'}}),
+            NodeDefinition('joe', 20,
+                           {'a': {'value': 'x[1]'}, 'b': {'value': '2.1'}}),
         ]
         self.parser = FrameParser(nodes)
 

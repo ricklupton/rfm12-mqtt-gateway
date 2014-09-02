@@ -3,6 +3,7 @@ from .nodes import NodeDefinition, load_definitions_from_yaml
 
 TEST_YAML = """
 - node_id: 10
+  name: emontx
   channels:
     value1:
       value: x[0]
@@ -24,7 +25,7 @@ TEST_CHANNELS = {
 
 class TestNodeDefinition(unittest.TestCase):
     def setUp(self):
-        self.node = NodeDefinition(10, TEST_CHANNELS)
+        self.node = NodeDefinition('name', 10, TEST_CHANNELS)
 
     def test_it_can_be_created(self):
         self.assertEqual(self.node.channels, TEST_CHANNELS)
@@ -39,28 +40,29 @@ class TestNodeDefinition(unittest.TestCase):
         })
 
     def test_cannot_access_namespace(self):
-        node = NodeDefinition(66, {'bad': {'value': 'unittest'}})
+        node = NodeDefinition('bob', 66, {'bad': {'value': 'unittest'}})
         with self.assertRaises(RuntimeError):
             node.parse_values([1, 2, 3])
 
     def test_raises_ValueError_if_not_enough_values(self):
-        node = NodeDefinition(66, {'name': {'value': 'x[4]'}})
+        node = NodeDefinition('bob', 66, {'name': {'value': 'x[4]'}})
         with self.assertRaises(ValueError):
             node.parse_values([1, 2, 3])
 
     def test_comparisons(self):
-        self.assertEqual(NodeDefinition(10, {'name': {'value': '1'}}),
-                         NodeDefinition(10, {'name': {'value': '1'}}))
-        self.assertNotEqual(NodeDefinition(10, {'name': {'value': '1'}}),
-                            NodeDefinition(11, {'name': {'value': '1'}}))
-        self.assertNotEqual(NodeDefinition(10, {'name': {'value': '1'}}),
-                            NodeDefinition(10, {'name': {'value': '2'}}))
+        self.assertEqual(NodeDefinition('bob', 10, {'name': {'value': '1'}}),
+                         NodeDefinition('bob', 10, {'name': {'value': '1'}}))
+        self.assertNotEqual(NodeDefinition('bob', 10, {'name': {'value': '1'}}),
+                            NodeDefinition('bob', 11, {'name': {'value': '1'}}))
+        self.assertNotEqual(NodeDefinition('bob', 10, {'name': {'value': '1'}}),
+                            NodeDefinition('bob', 10, {'name': {'value': '2'}}))
 
     def test_repr(self):
-        self.assertEqual(NodeDefinition(10, {}), '<NodeDefinition #10>')
+        self.assertEqual(repr(NodeDefinition('fred', 10, {})),
+                         '<NodeDefinition #10 fred>')
 
 
 class TestNodeDefinitionsFromYaml(unittest.TestCase):
     def test_loading_from_yaml(self):
         nodes = load_definitions_from_yaml(TEST_YAML)
-        self.assertEqual(nodes, [NodeDefinition(10, TEST_CHANNELS)])
+        self.assertEqual(nodes, [NodeDefinition('emontx', 10, TEST_CHANNELS)])

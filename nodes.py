@@ -4,7 +4,8 @@ logger = logging.getLogger(__name__)
 
 
 class NodeDefinition:
-    def __init__(self, node_id, channels):
+    def __init__(self, name, node_id, channels):
+        self.name = name
         self.id = node_id
         self.channels = channels
 
@@ -23,7 +24,7 @@ class NodeDefinition:
         return result
 
     def __repr__(self):
-        return "<NodeDefinition #{}>".format(self.id)
+        return "<NodeDefinition #{} {}>".format(self.id, self.name)
 
     def __eq__(self, other):
         return type(self) == type(other) and self.__dict__ == other.__dict__
@@ -34,5 +35,5 @@ class NodeDefinition:
 
 def load_definitions_from_yaml(stream):
     data = yaml.safe_load(stream)
-    return [NodeDefinition(d['node_id'], d['channels'])
+    return [NodeDefinition(d['name'], d['node_id'], d['channels'])
             for d in data]
