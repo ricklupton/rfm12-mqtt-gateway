@@ -3,7 +3,7 @@ from .nodes import NodeDefinition, load_definitions_from_yaml
 
 TEST_YAML = """
 - node_id: 10
-  name: emontx
+  name: /home/electricity
   channels:
     value1:
       value: x[0]
@@ -65,4 +65,5 @@ class TestNodeDefinition(unittest.TestCase):
 class TestNodeDefinitionsFromYaml(unittest.TestCase):
     def test_loading_from_yaml(self):
         nodes = load_definitions_from_yaml(TEST_YAML)
-        self.assertEqual(nodes, [NodeDefinition('emontx', 10, TEST_CHANNELS)])
+        self.assertEqual(nodes, [NodeDefinition('/home/electricity',
+                                                10, TEST_CHANNELS)])
