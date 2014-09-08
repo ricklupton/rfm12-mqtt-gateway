@@ -1,4 +1,3 @@
-import struct
 import logging
 logger = logging.getLogger(__name__)
 
@@ -38,17 +37,4 @@ class FrameParser:
             logger.warn("Unknown node id %d" % node_id)
             return None, {}
 
-        # Unpack the data
-        fmt = '<b' + node.payload_format
-        expected_len = struct.calcsize(fmt)
-        if len(buffer) != expected_len:
-            raise ValueError(
-                "Bad frame length (expected {} bytes for format '{}', got {}"
-                .format(expected_len, fmt, len(buffer)))
-        data = struct.unpack(fmt, buffer)
-        logger.debug("Node %d: parsed frame %s", node_id, data)
-
-        # Process into final values dictionary
-        values_dict = node.parse_values(data[1:])
-
-        return node, values_dict
+        return node, node.parse_payload(buffer[1:])
