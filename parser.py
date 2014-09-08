@@ -1,42 +1,6 @@
+import struct
 import logging
 logger = logging.getLogger(__name__)
-
-
-def _parse_frame(f):
-    # Get an array out of the space separated string
-    received = f.strip().split()
-
-    # If information message, discard
-    if ((received[0] == '>') or (received[0] == '->')):
-        return None, ' '.join(received[1:])
-
-    # Check frame not of the form
-    # [node val1_lsb val1_msb val2_lsb val2_msb ...]
-    # with number of elements odd and at least 3
-    if ((not (len(received) & 1)) or (len(received) < 3)):
-        raise ValueError(
-            "Wrong number of elements: found %d, expected odd number >= 3"
-            % len(received))
-
-    # Try to process frame
-    try:
-        # Only integers are expected
-        received = [int(val) for val in received]
-    except ValueError:
-        raise ValueError("Misformed frame: %s" % received)
-
-    # Get node ID
-    node_id = received[0]
-
-    # Recombine transmitted chars into signed int
-    values = []
-    for i in range(1, len(received), 2):
-        value = received[i] + 256 * received[i+1]
-        if value > 32768:
-            value -= 65536
-        values.append(value)
-
-    return node_id, values
 
 
 class FrameParser:
@@ -44,32 +8,47 @@ class FrameParser:
         self.nodes = {node.id: node for node in node_definitions}
 
     def process_frame(self, f):
-        """Process a frame of data
+        """Process a frame of data.
 
-        f (string): 'NodeID val1_lsb val1_msb val2_lsb val2_msb ...'
+        f is a space-separated string containing a sequence of
+        integers representing the bytes of the message. The first byte
+        is the node ID. This function recombines the integers
+        according to the sending node's payload format and checks
+        their validity.
 
-        This function recombines the integers and checks their validity.
-        Return (node_id, values_dict)
-
+        Returns (node, values_dict)
         """
         logger.debug("Frame: %s", f)
-        node_id, values = _parse_frame(f)
 
-        if node_id is None:
-            logger.info("Message: %s", values)
-            return None, {}
+        # Just return command echos and responses
+        if f.startswith(('>', '->')):
+            return None, f.strip().lstrip('>- ')
 
-        logger.debug("Parsed frame [%d] %s", node_id, values)
+        # Try to process frame - expect space-separated integers
+        try:
+            buffer = bytes([int(val) for val in f.strip().split()])
+        except ValueError:
+            raise ValueError("Misformed frame: %s" % f.strip())
 
-        # See if we know about this node
+        # Look up node id
+        node_id = buffer[0]
         try:
             node = self.nodes[node_id]
         except KeyError:
             logger.warn("Unknown node id %d" % node_id)
             return None, {}
 
-        values_dict = node.parse_values(values)
+        # Unpack the data
+        fmt = '<b' + node.payload_format
+        expected_len = struct.calcsize(fmt)
+        if len(buffer) != expected_len:
+            raise ValueError(
+                "Bad frame length (expected {} bytes for format '{}', got {}"
+                .format(expected_len, fmt, len(buffer)))
+        data = struct.unpack(fmt, buffer)
+        logger.debug("Node %d: parsed frame %s", node_id, data)
+
+        # Process into final values dictionary
+        values_dict = node.parse_values(data[1:])
 
         return node, values_dict
-
-
