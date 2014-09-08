@@ -43,6 +43,7 @@ class EmonMQTTGateway:
 
         with open('nodes.yaml', 'rt') as f:
             nodes = load_definitions_from_yaml(f.read())
+        self.nodes_by_name = {node.name: node for node in nodes}
         self.parser = FrameParser(nodes)
 
         self.mqtt_client = paho.Client()
@@ -87,17 +88,27 @@ class EmonMQTTGateway:
                 logger.debug('Publishing [%s] %s', topic, payload)
                 self.mqtt_client.publish(topic, payload)
 
-    def _send_time(self):
-         now = datetime.now()
-         logger.debug("Broadcasting time %02d:%02d", now.hour, now.minute)
-         frame = "00,%02d,%02d,00,s" % (now.hour, now.minute)
-         self.writer.write(frame.encode('ascii'))
+    def _send_message(self, node_name, command_name, values):
+        try:
+            node = self.nodes_by_name[node_name]
+        except KeyError:
+            logger.error("Unknown node name '%s'", node_name)
+            return
+
+        logger.info("Sending command '%s' to node '%s'",
+                    command_name, node_name)
+        payload = node.encode_command(command_name, values)
+        self._write_payload(payload)
+
+    def _write_payload(self, payload):
+        frame = ','.join(['%02d' % x for x in payload]) + ',s'
+        self.writer.write(frame.encode('ascii'))
 
     def _mqtt_on_connect(self, client, userdata, flags_dict, rc):
         if rc == 0:
             logger.info('Connected to MQTT server')
             # subscribe
-            self.mqtt_client.subscribe('/broadcast/#')
+            self.mqtt_client.subscribe('/send_command/#')
         else:
             logger.error('Error connecting to MQTT server (%d): %s',
                          rc, paho.connack_string(rc))
@@ -105,8 +116,15 @@ class EmonMQTTGateway:
     def _mqtt_on_message(self, client, userdata, message):
         logger.info('Received MQTT message [%s] "%s"',
                     message.topic, message.payload)
-        if message.topic == '/broadcast/time':
-            self._send_time()
+        if not message.topic.startswith('/'):
+            return
+        parts = message.topic[1:].split('/')
+        if parts[0] == 'send_command':
+            if len(parts) < 3:
+                logger.error('Bad send_command topic: "%s"', message.topic)
+            else:
+                self._send_command('/'.join([''] + parts[1:-1]), parts[-1],
+                                   message.payload)
 
     def _mqtt_loop(self):
         rc = self.mqtt_client.loop(timeout=0)
