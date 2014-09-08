@@ -4,9 +4,10 @@ logger = logging.getLogger(__name__)
 
 
 class NodeDefinition:
-    def __init__(self, name, node_id, channels):
+    def __init__(self, name, node_id, payload_format, channels):
         self.name = name
         self.id = node_id
+        self.payload_format = payload_format
         self.channels = channels
 
     def parse_values(self, values):
@@ -35,5 +36,7 @@ class NodeDefinition:
 
 def load_definitions_from_yaml(stream):
     data = yaml.safe_load(stream)
-    return [NodeDefinition(d['name'], d['node_id'], d['channels'])
-            for d in data]
+    return [
+        NodeDefinition(d['name'], d['node_id'], d['payload'], d['channels'])
+        for d in data
+    ]
