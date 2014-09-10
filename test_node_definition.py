@@ -90,11 +90,19 @@ class TestNodeDefinition(unittest.TestCase):
 
     def test_encode_command_works(self):
         tests = [
-            ('set_time', {'hours': 12, 'minutes': 21, 'seconds': 59},
+            ('bbbb', "[0, x['hours'], x['minutes'], x['seconds']]",
+             {'hours': 12, 'minutes': 21, 'seconds': 59},
              bytes((0, 12, 21, 59))),
+
+            (' b b 5s', "[0, 5, x['message'].encode('ascii')]",
+             {'message': 'hello'},
+             bytes([0, 5]) + b'hello'),
         ]
-        for command, values, expected in tests:
-            self.assertEqual(self.node.encode_command(command, values),
+        for payload, pattern, values, expected in tests:
+            node = NodeDefinition('name', 1, 'b', commands={
+                'cmd': {'payload': payload, 'values': pattern}
+            })
+            self.assertEqual(node.encode_command('cmd', values),
                              expected)
 
     def test_encode_command_cannot_access_namespace(self):
