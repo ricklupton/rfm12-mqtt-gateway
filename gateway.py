@@ -39,7 +39,7 @@ class EmonMQTTGateway:
             loop = asyncio.get_event_loop()
         self._loop = loop
 
-        self.frame_log = TextFileWriter('frame_log', 'frames')
+        self.frame_log = TextFileWriter('/mnt/stick/frame_log', 'frames')
 
         with open('nodes.yaml', 'rt') as f:
             nodes = load_definitions_from_yaml(f.read())
@@ -88,20 +88,31 @@ class EmonMQTTGateway:
                 logger.debug('Publishing [%s] %s', topic, payload)
                 self.mqtt_client.publish(topic, payload)
 
-    def _send_message(self, node_name, command_name, values):
+    def _send_command(self, node_name, command_name, values):
         try:
             node = self.nodes_by_name[node_name]
         except KeyError:
             logger.error("Unknown node name '%s'", node_name)
             return
 
+        try:
+            values = json.loads(values.decode('utf8'))
+        except Exception as err:
+            logger.error("Error parsing JSON: %r", err)
+            return
+
         logger.info("Sending command '%s' to node '%s'",
                     command_name, node_name)
-        payload = node.encode_command(command_name, values)
-        self._write_payload(payload)
+        try:
+            payload = node.encode_command(command_name, values)
+        except Exception as err:
+            logger.error("Error encoding command: %r", err)
+        else:
+            self._write_payload(node.id, payload)
 
-    def _write_payload(self, payload):
-        frame = ','.join(['%02d' % x for x in payload]) + ',s'
+    def _write_payload(self, node_id, payload):
+        frame = ','.join(['%02d' % x for x in payload]) + ',%ds' % node_id
+        logger.debug('Writing line: %s', frame)
         self.writer.write(frame.encode('ascii'))
 
     def _mqtt_on_connect(self, client, userdata, flags_dict, rc):
