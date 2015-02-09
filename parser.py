@@ -20,7 +20,7 @@ class FrameParser:
         logger.debug("Frame: %s", f)
 
         # Just return command echos and responses
-        if f.startswith(('>', '->')):
+        if f.strip().startswith(('>', '->')):
             return None, f.strip().lstrip('>- ')
 
         # Try to process frame - expect space-separated integers

@@ -56,9 +56,9 @@ class NodeDefinition:
         try:
             payload = struct.pack(fmt, *values)
         except struct.error:
-            raise ValueError(("Wrong number of values for payload format "
+            raise ValueError(("Wrong number of values ({}) for payload format "
                               "'{}' while processing command '{}'")
-                             .format(fmt, command_name))
+                             .format(len(values), fmt, command_name))
         return payload
 
     def __repr__(self):
@@ -84,7 +84,7 @@ def load_definitions_from_yaml(stream):
     data = yaml.safe_load(stream)
     return [
         NodeDefinition(d['name'], d['node_id'], d['payload'],
-                       _ensure_values_are_strings(d.get('channels')),
-                       _ensure_values_are_strings(d.get('commands')))
+                       _ensure_values_are_strings(d.get('channels', {})),
+                       _ensure_values_are_strings(d.get('commands', {})))
         for d in data
     ]
