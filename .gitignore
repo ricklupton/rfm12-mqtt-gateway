@@ -1,3 +1,6 @@
 /.coverage
 /__pycache__/
+*.pyc
 /cover/
+/.tox/
+*.egg-info/

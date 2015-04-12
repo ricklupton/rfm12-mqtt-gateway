@@ -6,7 +6,7 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+with open('README', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -36,12 +36,12 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        # 'Programming Language :: Python :: 2',
+        # 'Programming Language :: Python :: 2.6',
+        # 'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
+        # 'Programming Language :: Python :: 3.2',
+        # 'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
 
@@ -50,9 +50,9 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['rfm12_mqtt_gateway']
+    packages=['rfm12_mqtt_gateway'],
 
-    install_requires=['paho-mqtt'],
+    install_requires=['PyYAML', 'paho-mqtt'],
 
     extras_require={
         'test': ['coverage'],
@@ -63,7 +63,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'rfm12-mqtt-gateway=rfm12-mqtt-gateway.__main__:main',
+            'rfm12-mqtt-gateway=rfm12_mqtt_gateway.__main__:main',
         ],
     },
 )

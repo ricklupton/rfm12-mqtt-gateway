@@ -34,7 +34,7 @@ class FrameParser:
         try:
             node = self.nodes[node_id]
         except KeyError:
-            logger.warn("Unknown node id %d" % node_id)
+            logger.warning("Unknown node id %d" % node_id)
             return None, {}
 
         return node, node.parse_payload(buffer[1:])
