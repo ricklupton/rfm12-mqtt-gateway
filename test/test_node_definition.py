@@ -1,5 +1,5 @@
 import unittest
-from .nodes import NodeDefinition, load_definitions_from_yaml
+from rfm12_mqtt_gateway.nodes import NodeDefinition, load_definitions_from_yaml
 
 TEST_YAML = """
 - node_id: 10
