@@ -1,0 +1,27 @@
+- node_id: 10
+  name: /home/electricity
+  payload: hhhh
+  channels:
+    power:
+      value: x[0]
+      units: W
+    apparent_power:
+      value: x[1]
+      units: W
+    power_factor:
+      value: x[2] / 10000
+      units: .
+    voltage_rms:
+      value: x[3] / 100
+      units: V
+  commands:
+    set_time:
+      payload: bbbb
+      values: "[0, x['hours'], x['minutes'], x['seconds']]"
+- node_id: 20
+  name: /home/livingroom
+  payload: h
+  channels:
+    temperature:
+      value: x[0] / 100
+      units: C
