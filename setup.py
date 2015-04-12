@@ -31,7 +31,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
-        'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
 
         # Specify the Python versions you support here. In particular, ensure
