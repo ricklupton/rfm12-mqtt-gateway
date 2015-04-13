@@ -51,7 +51,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=['rfm12_mqtt_gateway'],
 
-    install_requires=['PyYAML', 'paho-mqtt'],
+    install_requires=['PyYAML', 'pyserial', 'paho-mqtt'],
 
     extras_require={
         'test': ['coverage'],

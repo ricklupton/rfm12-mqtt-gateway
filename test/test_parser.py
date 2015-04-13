@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
-from .parser import FrameParser
-from .nodes import NodeDefinition
+from rfm12_mqtt_gateway.parser import FrameParser
+from rfm12_mqtt_gateway.nodes import NodeDefinition
 
 
 class TestFrameParser(unittest.TestCase):

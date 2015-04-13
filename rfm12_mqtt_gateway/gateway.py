@@ -1,18 +1,15 @@
-import argparse
 import asyncio
 import serial
 from datetime import datetime
 import json
 import paho.mqtt.client as paho
-
 import logging
-logger = logging.getLogger('gateway')
 
-import sys
-sys.path.append('..')
-from emon.parser import FrameParser
-from emon.nodes import load_definitions_from_yaml
-from emon.textfilewriter import TextFileWriter
+from .parser import FrameParser
+from .nodes import load_definitions_from_yaml
+from .textfilewriter import TextFileWriter
+
+logger = logging.getLogger('gateway')
 
 
 @asyncio.coroutine
@@ -143,27 +140,3 @@ class EmonMQTTGateway:
             logger.error('Error in MQTT loop (%d): %s',
                          rc, paho.error_string(rc))
         self._loop.call_later(1.0, self._mqtt_loop)
-
-
-def main():
-    # Set up logging
-    parser = argparse.ArgumentParser(description='emon gateway')
-    parser.add_argument('-L', '--log-level', default='warning')
-    args = parser.parse_args()
-
-    numeric_level = getattr(logging, args.log_level.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % args.log_level)
-    logging.basicConfig(
-        level=numeric_level,
-        format="%(asctime)s %(name)s [%(levelname)s] %(message)s")
-    logging.getLogger('asyncio').setLevel('WARNING')
-
-    gateway = EmonMQTTGateway()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(gateway.run_input())
-    loop.close()
-
-
-if __name__ == '__main__':
-    main()
